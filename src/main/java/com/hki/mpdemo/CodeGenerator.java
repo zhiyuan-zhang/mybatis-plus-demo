@@ -63,14 +63,14 @@ public class CodeGenerator {
         GlobalConfig gc = new GlobalConfig();
         String projectPath = System.getProperty("user.dir");
         gc.setOutputDir(projectPath + "/src/main/java");
-        gc.setAuthor("jobob");
+        gc.setAuthor("zhanghao");
+        gc.setSwagger2(true);
         gc.setOpen(false);
-        gc.setIdType(IdType.AUTO);
         mpg.setGlobalConfig(gc);
 
         // 数据源配置
         DataSourceConfig dsc = new DataSourceConfig();
-        dsc.setUrl("jdbc:mysql://localhost:8083/zwkj_zhxt?useUnicode=true&useSSL=false&characterEncoding=utf8");
+        dsc.setUrl("jdbc:mysql://localhost:3306/zwkj_zhxt?useUnicode=true&useSSL=false&characterEncoding=utf8");
         // dsc.setSchemaName("public");
         dsc.setDriverName("com.mysql.jdbc.Driver");
         dsc.setUsername("root");
@@ -79,9 +79,16 @@ public class CodeGenerator {
 
         // 包配置
         PackageConfig pc = new PackageConfig();
-        pc.setModuleName(scanner("模块名"));
-        pc.setParent("com.hki.mpdemo");
+//        pc.setModuleName(scanner("模块名"));
+        pc.setParent("com.hki.mqdemo");
+        pc.setController("controller");
+        pc.setEntity("mvc."+ scanner("模块名"));
+        pc.setService(pc.getEntity());
+        pc.setServiceImpl(pc.getEntity() +".impl");
+        pc.setMapper(pc.getEntity() + ".mapper");
+
         mpg.setPackageInfo(pc);
+
 
         // 自定义配置
         InjectionConfig cfg = new InjectionConfig() {
@@ -90,55 +97,46 @@ public class CodeGenerator {
                 // to do nothing
             }
         };
-
-        // 如果模板引擎是 freemarker
-        String templatePath = "/templates/mapper.xml.ftl";
-        // 如果模板引擎是 velocity
-        // String templatePath = "/templates/mapper.xml.vm";
-
-        // 自定义输出配置
         List<FileOutConfig> focList = new ArrayList<>();
-        // 自定义配置会被优先输出
-        focList.add(new FileOutConfig(templatePath) {
+        focList.add(new FileOutConfig("/templates/mapper.xml.vm") {
             @Override
             public String outputFile(TableInfo tableInfo) {
-                // 自定义输出文件名 ， 如果你 Entity 设置了前后缀、此处注意 xml 的名称会跟着发生变化！！
-                return projectPath + "/src/main/resources/mapper/" + pc.getModuleName()
+                // 自定义输入文件名称
+                return projectPath + "/src/main/resources/mapper/" + tableInfo.getEntityName().toLowerCase()
                         + "/" + tableInfo.getEntityName() + "Mapper" + StringPool.DOT_XML;
             }
         });
-
         cfg.setFileOutConfigList(focList);
         mpg.setCfg(cfg);
 
-        // 配置模板
-        TemplateConfig templateConfig = new TemplateConfig();
 
-        // 配置自定义输出模板
-        //指定自定义模板路径，注意不要带上.ftl/.vm, 会根据使用的模板引擎自动识别
-        // templateConfig.setEntity("templates/entity2.java");
-        // templateConfig.setService();
-        // templateConfig.setController();
-
-        templateConfig.setXml(null);
-        mpg.setTemplate(templateConfig);
+        // 自定义模板配置，可以 copy 源码 mybatis-plus/src/main/resources/templates 下面内容修改，
+        TemplateConfig tc = new TemplateConfig();
+        tc.setController("/templates/controller.java");
+//        tc.setService("/templatesMybatis/service.java.vm");
+//        tc.setServiceImpl("/templatesMybatis/serviceImpl.java.vm");
+//        tc.setEntity("/templatesMybatis/entity.java.vm");
+//        tc.setMapper("/templatesMybatis/mapper.java.vm");
+//        tc.setXml("/templatesMybatis/mapper.xml.vm");
+        // 如上任何一个模块如果设置 空 OR Null 将不生成该模块。
+        mpg.setTemplate(tc.setXml(null));
+//        mpg.setTemplate(new TemplateConfig().setXml(null));
 
         // 策略配置
         StrategyConfig strategy = new StrategyConfig();
         strategy.setNaming(NamingStrategy.underline_to_camel);
         strategy.setColumnNaming(NamingStrategy.underline_to_camel);
-//        strategy.setSuperEntityClass("com.baomidou.ant.common.BaseEntity");
+//        strategy.setSuperEntityClass("com.demo.shiro.bean.BaseEntity");
         strategy.setEntityLombokModel(true);
         strategy.setRestControllerStyle(true);
-
-//        strategy.setSuperControllerClass("com.baomidou.ant.common.BaseController");
+//        strategy.setSuperControllerClass("com.baomidou.mybatisplus.samples.generator.common.BaseController");
         strategy.setInclude(scanner("表名"));
 //        strategy.setSuperEntityColumns("id");
         strategy.setControllerMappingHyphenStyle(true);
         strategy.setTablePrefix(pc.getModuleName() + "_");
         mpg.setStrategy(strategy);
-
-        mpg.setTemplateEngine(new FreemarkerTemplateEngine());
+        // 选择 freemarker 引擎需要指定如下加，注意 pom 依赖必须有！
+//        mpg.setTemplateEngine(new FreemarkerTemplateEngine());
         mpg.execute();
     }
 
