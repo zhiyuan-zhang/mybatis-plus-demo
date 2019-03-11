@@ -13,3 +13,5 @@ logging:
   level:
     com.hki.mpdemo.sysuser.mapper: debug
 # MyBatis-Plus 配置该演示无
+server:
+  port: 8088

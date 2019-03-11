@@ -10,14 +10,11 @@ import org.springframework.stereotype.Controller;
 #if(${superControllerClassPackage})
 import ${superControllerClassPackage};
 #end
-import com.hki.mpdemo.ResultBean:
+import com.hki.mpdemo.ResultBean;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -85,8 +82,8 @@ public class ${table.controllerName} {
      * @author ${author}
      * @since ${date}
      */
-    @RequestMapping(value = "/${table.entityPath}/{id}", method = RequestMethod.PUT)
-    public ResultBean<Boolean> update${entity}(@PathVariable ${entity} ${table.entityPath}) {
+    @RequestMapping(value = "/${table.entityPath}", method = RequestMethod.PUT)
+    public ResultBean<Boolean> update${entity}(@RequestBody ${entity} ${table.entityPath}) {
         return new ResultBean<Boolean>(i${entity}Service.updateById(${table.entityPath}));
     }
     /**
@@ -111,7 +108,7 @@ public class ${table.controllerName} {
      * @since ${date}
      */
     @RequestMapping(value = { "/${table.entityPath}s", "/" }, method = RequestMethod.GET)
-    private ResultBean<IPage<${entity}>> findeAll(IPage<${entity}> page) {
+    public ResultBean<IPage<${entity}>> findeAll(@RequestBody IPage<${entity}> page) {
         return new ResultBean<IPage<${entity}>>(i${entity}Service.page(page));
     }
 
